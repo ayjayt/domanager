@@ -17,3 +17,5 @@ node_modules/*
 gerbers.zip
 gerbers/
 *.lck
+domanager
+domains.yaml
