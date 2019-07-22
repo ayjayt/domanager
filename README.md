@@ -1,2 +1,2 @@
-# domain-manager
-domain manager combines namecheap and letsencrypt
+# domanager
+domanager is a domain manager combines namecheap and letsencrypt
