@@ -16,13 +16,20 @@ import (
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/ayjayt/ilog"
 	// letsencrypt
 	// logging
 )
 
 const ()
 
+var defaultLogger ilog.LoggerInterface
+
 func init() {
+	defaultLogger = &ilog.ZapWrap{Sugar: false}
+	defaultLogger.Init()
+	defaultLogger.Info("Logging test")
 	var err error
 	viper.SetConfigName("domains")
 	viper.AddConfigPath("/etc/domanager")
