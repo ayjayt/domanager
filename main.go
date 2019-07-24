@@ -155,6 +155,7 @@ func main() {
 			} else {
 				me.ipErr = errNotFound
 				for _, ip := range retreivedIPs {
+					me.ip = ip.String()
 					if ipMetaData, ok := ips[ip.String()]; ok {
 						me.ip = ip.String()
 						if name, ok := ipMetaData.(map[string]interface{})["name"]; ok {
