@@ -2,7 +2,7 @@ module domanager
 
 go 1.12
 
-replace github.com/ayjayt/sslchk => ../sslchk
+//replace github.com/ayjayt/sslchk => ../sslchk
 
 require (
 	github.com/ayjayt/ilog v0.0.0-20190723193223-ae1d18ab078a
