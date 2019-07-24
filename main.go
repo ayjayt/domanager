@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/ayjayt/ilog"
+	"github.com/ayjayt/sslchk"
 	"github.com/spf13/viper"
 	// letsencrypt
 )
@@ -60,10 +61,12 @@ type Info struct {
 	nameServerErr error
 	get           bool
 	getErr        error
+	certs         map[string]sslchk.CheckReturn
+	certErr       error
 }
 
 func (i *Info) Out() {
-	w := tabwriter.NewWriter(os.Stdout, 30, 2, 2, '.', tabwriter.Debug)
+	w := tabwriter.NewWriter(os.Stdout, 28, 1, 1, '.', tabwriter.Debug)
 	if i.ipErr == nil {
 		fmt.Fprint(w, i.domain+"\t"+i.name+"\t"+i.ip+"\t"+"irrelevant")
 	} else {
@@ -84,9 +87,18 @@ func (i *Info) Out() {
 	} else {
 		fmt.Fprint(w, "\tUNRESPONSIVE")
 	}
-	fmt.Fprintln(w, "\t")
+	if i.certErr != nil {
+		maxLen := 15
+		if len(i.certErr.Error()) < 15 {
+			maxLen = len(i.certErr.Error())
+		}
+		fmt.Fprintln(w, "\t"+i.certErr.Error()[:maxLen]+"\t")
+	} else {
+		fmt.Fprintln(w, "\tOK\t")
+	}
 	w.Flush()
 }
+
 func main() {
 	domains = viper.GetStringMap("domains")
 	ips = viper.GetStringMap("ips")
@@ -161,15 +173,30 @@ func main() {
 					me.get = true
 				}
 			}
+			if me.getErr == nil {
+				me.certs, me.certErr = sslchk.CheckHost(domain)
+			} else {
+				me.certs = nil
+				me.certErr = errors.New("No response")
+			}
 			chn <- me
 		}(domain)
 	}
 	i := 0
+	mine := make([]Info, len(domains))
 	for me := range chn {
+		mine[i] = *me
 		i++
 		me.Out()
 		if i == len(domains) {
 			break
+		}
+	}
+	for _, me := range mine {
+		if me.certErr == nil {
+			for _, myCert := range me.certs {
+				myCert.Out()
+			}
 		}
 	}
 }
