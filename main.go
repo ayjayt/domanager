@@ -35,13 +35,34 @@ var FindExpiry *regexp.Regexp
 var defaultLogger ilog.LoggerInterface
 var ips map[string]interface{}
 var domains map[string]interface{}
+var myIPs map[string]bool
 
 func init() {
+	var err error
+	myIPs = make(map[string]bool, 10)
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		panic(err)
+	}
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			panic(err)
+		}
+		for _, addr := range addrs {
+			switch v := addr.(type) {
+			case *net.IPNet:
+				myIPs[v.IP.String()] = true
+			case *net.IPAddr:
+				myIPs[v.IP.String()] = true
+			}
+		}
+	}
+
 	FindExpiry = regexp.MustCompile(`\n\s*Registry Expiry Date: (.+Z)`)
 	defaultLogger = &ilog.ZapWrap{Sugar: false}
 	defaultLogger.Init()
 	//defaultLogger.Info("Logging test")
-	var err error
 	viper.SetConfigName("domains")
 	viper.AddConfigPath("/etc/domanager")
 	viper.AddConfigPath("$HOME/")
@@ -115,6 +136,11 @@ func (i *Info) Out() {
 func main() {
 	domains = viper.GetStringMap("domains")
 	ips = viper.GetStringMap("ips")
+	for k, _ := range ips {
+		if _, ok := myIPs[k]; ok {
+			fmt.Printf("Found my ip: %v\n", k)
+		}
+	}
 	chn := make(chan *Info, len(domains))
 	for domain, _ := range domains {
 		go func(domain string) {
