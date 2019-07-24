@@ -16,12 +16,14 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"text/tabwriter"
 	"time"
 
 	"github.com/ayjayt/ilog"
 	"github.com/ayjayt/sslchk"
+	"github.com/domainr/whois"
 	"github.com/spf13/viper"
 	// letsencrypt
 )
@@ -29,12 +31,13 @@ import (
 var (
 	errNotFound = errors.New("not found")
 )
-
+var FindExpiry *regexp.Regexp
 var defaultLogger ilog.LoggerInterface
 var ips map[string]interface{}
 var domains map[string]interface{}
 
 func init() {
+	FindExpiry = regexp.MustCompile(`\n\s*Registry Expiry Date: (.+Z)`)
 	defaultLogger = &ilog.ZapWrap{Sugar: false}
 	defaultLogger.Init()
 	//defaultLogger.Info("Logging test")
@@ -63,17 +66,26 @@ type Info struct {
 	getErr        error
 	certs         map[string]sslchk.CheckReturn
 	certErr       error
+	expiryErr     error
+	expiry        string
+}
+
+func CutString(input string) string {
+	if len(input) < 19 {
+		return input
+	}
+	return input[0:19] + "..."
 }
 
 func (i *Info) Out() {
-	w := tabwriter.NewWriter(os.Stdout, 28, 1, 1, '.', tabwriter.Debug)
+	w := tabwriter.NewWriter(os.Stdout, 23, 1, 1, '.', tabwriter.Debug)
 	if i.ipErr == nil {
-		fmt.Fprint(w, i.domain+"\t"+i.name+"\t"+i.ip+"\t"+"irrelevant")
+		fmt.Fprint(w, CutString(i.domain)+"\t"+i.name+"\t"+i.ip+"\t"+"irrelevant")
 	} else {
 		if i.nameServerErr == nil {
-			fmt.Fprint(w, i.domain+"\tunknown\t"+i.ip+"\t"+i.nameServer)
+			fmt.Fprint(w, CutString(i.domain)+"\tunknown\t"+i.ip+"\t"+CutString(i.nameServer))
 		} else {
-			fmt.Fprint(w, i.domain+"\tunknown\t"+i.ip+"\tunkown")
+			fmt.Fprint(w, CutString(i.domain)+"\tunknown\t"+i.ip+"\tunkown")
 
 		}
 	}
@@ -87,12 +99,13 @@ func (i *Info) Out() {
 	} else {
 		fmt.Fprint(w, "\tUNRESPONSIVE")
 	}
+	if i.expiryErr == nil {
+		fmt.Fprint(w, "\t"+i.expiry)
+	} else {
+		fmt.Fprint(w, "\t"+CutString(i.expiryErr.Error()))
+	}
 	if i.certErr != nil {
-		maxLen := 15
-		if len(i.certErr.Error()) < 15 {
-			maxLen = len(i.certErr.Error())
-		}
-		fmt.Fprintln(w, "\t"+i.certErr.Error()[:maxLen]+"\t")
+		fmt.Fprintln(w, "\t"+CutString(i.certErr.Error())+"\t")
 	} else {
 		fmt.Fprintln(w, "\tOK\t")
 	}
@@ -178,6 +191,25 @@ func main() {
 			} else {
 				me.certs = nil
 				me.certErr = errors.New("No response")
+			}
+			request, err := whois.NewRequest(me.domain)
+			if err != nil {
+				me.expiryErr = err
+			}
+			whoisresp, err := whois.DefaultClient.Fetch(request)
+			if err != nil {
+				me.expiryErr = err
+			}
+			bits := FindExpiry.FindSubmatch(whoisresp.Body)
+			me.expiryErr = errors.New("unfound")
+			if len(bits) > 0 {
+				me.expiryErr = nil
+				timeString := strings.TrimSpace(string(bits[1]))
+				t, err := time.Parse("2006-01-02T15:04:05.999Z", timeString)
+				if err != nil {
+					me.expiryErr = err
+				}
+				me.expiry = fmt.Sprintf("%d days", t.Sub(time.Now()).Round(time.Hour)/(24*time.Hour))
 			}
 			chn <- me
 		}(domain)
