@@ -85,6 +85,7 @@ type Info struct {
 	nameServerErr error
 	get           bool
 	getErr        error
+	getRes        int
 	certs         map[string]sslchk.CheckReturn
 	certErr       error
 	expiryErr     error
@@ -118,7 +119,11 @@ func (i *Info) Out() {
 	if i.get {
 		fmt.Fprint(w, "\tRESPONDING")
 	} else {
-		fmt.Fprint(w, "\tUNRESPONSIVE")
+		if i.getRes != 0 {
+			fmt.Fprintf(w, "\t%d", i.getRes)
+		} else {
+			fmt.Fprint(w, "\tUNRESPONSIVE")
+		}
 	}
 	if i.expiryErr == nil {
 		fmt.Fprint(w, "\t"+i.expiry)
@@ -157,7 +162,6 @@ func main() {
 				for _, ip := range retreivedIPs {
 					me.ip = ip.String()
 					if ipMetaData, ok := ips[ip.String()]; ok {
-						me.ip = ip.String()
 						if name, ok := ipMetaData.(map[string]interface{})["name"]; ok {
 							me.name = name.(string)
 						} else {
@@ -168,16 +172,6 @@ func main() {
 					}
 				}
 			}
-			// TODO: Okay, we've got the IP's name or we don't know what it is.
-
-			// We're not using this right now
-			//txt, err := net.LookupTXT(k)
-			//if err != nil {
-			//	fmt.Printf("\terr: %v\n", err)
-			//} else {
-			//	fmt.Printf("\tTXT: %v\n", txt)
-			//}
-
 			mx, err := net.LookupMX(domain)
 			if err != nil {
 				me.mailErr = err
@@ -208,6 +202,7 @@ func main() {
 				me.getErr = err
 			} else {
 				resp.Body.Close()
+				me.getRes = resp.StatusCode
 				if resp.StatusCode == 200 {
 					me.getErr = nil
 					me.get = true
