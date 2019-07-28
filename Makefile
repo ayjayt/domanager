@@ -3,7 +3,7 @@ all:
 	go build
 
 install:
-	go install
+	GOBIN=$(HOME)/bin/ go install
 
 test:
 	go test -test.v -cover -race 
