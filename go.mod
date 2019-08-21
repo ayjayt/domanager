@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4 // indirect
 	github.com/ayjayt/ilog v0.0.0-20190723193223-ae1d18ab078a
-	github.com/ayjayt/sslchk v0.0.0-20190821192222-b2a1f948c22c
+	github.com/ayjayt/sslchk v0.0.0-20190821193010-312ac2c1c475
 	github.com/coreos/bbolt v1.3.3 // indirect
 	github.com/coreos/etcd v3.3.15+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect

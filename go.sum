@@ -24,6 +24,8 @@ github.com/ayjayt/sslchk v0.0.0-20190724192022-626bb6b2a223 h1:fn05E2HRyWCOLpJ3i
 github.com/ayjayt/sslchk v0.0.0-20190724192022-626bb6b2a223/go.mod h1:R63dLY9GpK8VdEekIOWZFR+LKDku4F/IoM2DceeiK3c=
 github.com/ayjayt/sslchk v0.0.0-20190821192222-b2a1f948c22c h1:Rc+no2un+QzyWdIoH2PHp9jrzvCEgVkWEnZvo1w3aGk=
 github.com/ayjayt/sslchk v0.0.0-20190821192222-b2a1f948c22c/go.mod h1:R63dLY9GpK8VdEekIOWZFR+LKDku4F/IoM2DceeiK3c=
+github.com/ayjayt/sslchk v0.0.0-20190821193010-312ac2c1c475 h1:6FHwsre/jCmkW2yOXrWKXr8F1K+WexITVuCIW/1WvbM=
+github.com/ayjayt/sslchk v0.0.0-20190821193010-312ac2c1c475/go.mod h1:R63dLY9GpK8VdEekIOWZFR+LKDku4F/IoM2DceeiK3c=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
