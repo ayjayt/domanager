@@ -92,27 +92,29 @@ type Info struct {
 	expiry        string
 }
 
+var minWidth = 15
+
 func CutString(input string) string {
-	if len(input) < 19 {
+	if len(input) < minWidth-1 {
 		return input
 	}
-	return input[0:19] + "..."
+	return input[0:minWidth-4] + "..."
 }
 
 func (i *Info) Out() {
-	w := tabwriter.NewWriter(os.Stdout, 23, 1, 1, '.', tabwriter.Debug)
+	w := tabwriter.NewWriter(os.Stdout, minWidth, 0, 1, '.', tabwriter.AlignRight|tabwriter.Debug)
 	if i.ipErr == nil {
-		fmt.Fprint(w, CutString(i.domain)+"\t"+i.name+"\t"+i.ip+"\t"+"irrelevant")
+		fmt.Fprint(w, CutString(i.domain)+"\t"+CutString(i.name)+"\t"+"irrelevant")
 	} else {
 		if i.nameServerErr == nil {
-			fmt.Fprint(w, CutString(i.domain)+"\tunknown\t"+i.ip+"\t"+CutString(i.nameServer))
+			fmt.Fprint(w, CutString(i.domain)+"\tunknown\t"+CutString(i.nameServer))
 		} else {
-			fmt.Fprint(w, CutString(i.domain)+"\tunknown\t"+i.ip+"\tunkown")
+			fmt.Fprint(w, CutString(i.domain)+"\tunknown\t"+"unkown")
 
 		}
 	}
 	if i.mailErr == nil {
-		fmt.Fprint(w, "\tGOOGLE-MAIL")
+		fmt.Fprint(w, "\tGMAIL")
 	} else {
 		fmt.Fprint(w, "\tNO MAIL")
 	}
@@ -246,6 +248,7 @@ func main() {
 			break
 		}
 	}
+	fmt.Println("")
 	for _, me := range mine {
 		if me.certErr == nil {
 			for _, myCert := range me.certs {
